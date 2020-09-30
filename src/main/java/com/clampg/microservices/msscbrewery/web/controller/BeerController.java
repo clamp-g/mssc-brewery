@@ -2,6 +2,8 @@ package com.clampg.microservices.msscbrewery.web.controller;
 
 import java.util.UUID;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -41,7 +43,7 @@ public class BeerController {
 	// @RequestBody tells Spring to bind the JSON values in the request to 
 	// the values of BeerDto, if you don't use this annotation all values in
 	// beerDto will be null, no binding will occur.
-	public ResponseEntity handlePost(@RequestBody BeerDto beerDto) {
+	public ResponseEntity handlePost(@Valid @RequestBody BeerDto beerDto) {
 		BeerDto savedBeer = beerService.saveNewBeer(beerDto);
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -53,7 +55,7 @@ public class BeerController {
 	}
 	
 	@PutMapping("/{beerId}")
-	public ResponseEntity handleUpdate(@PathVariable UUID beerId, @RequestBody BeerDto beerDto) {	
+	public ResponseEntity handleUpdate(@PathVariable UUID beerId, @Valid @RequestBody BeerDto beerDto) {	
 		beerService.updateBeer(beerId, beerDto);
 		return new ResponseEntity(HttpStatus.NO_CONTENT);		
 	}

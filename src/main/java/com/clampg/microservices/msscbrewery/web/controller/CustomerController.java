@@ -1,12 +1,18 @@
 package com.clampg.microservices.msscbrewery.web.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +37,7 @@ public class CustomerController {
 		return new ResponseEntity(custService.findCustomerById(custId), HttpStatus.OK);
 	}
 	@PostMapping
-	public ResponseEntity handlePost(@RequestBody CustomerDto customer) {
+	public ResponseEntity handlePost(@Valid @RequestBody CustomerDto customer) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("Location", "/api/v1/customer"+"/"
 				+custService.saveNewCustomer(customer).getId().toString());
@@ -40,7 +46,7 @@ public class CustomerController {
 	@PutMapping("/{custId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void handleUpdate(@PathVariable UUID custId, 
-			@RequestBody CustomerDto customer) {
+			@Valid @RequestBody CustomerDto customer) {
 		custService.updateCustomer(custId);		
 	}
 	@DeleteMapping("/{custId}")
@@ -48,4 +54,13 @@ public class CustomerController {
 	public void deleteCustomer(@PathVariable UUID custId) {
 		custService.deleteCustomer(custId);		
 	}	
+	
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<List> validationErrorHandler (ConstraintViolationException e) {
+		List<String> errors = new ArrayList<>(e.getConstraintViolations().size());
+		e.getConstraintViolations().forEach(constraintViolation -> {
+			errors.add(constraintViolation.getPropertyPath() + " : " + constraintViolation.getMessage());		
+		});
+		return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+	}
 }
